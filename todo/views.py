@@ -423,11 +423,36 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             return Response({"status": "Future events updated by creating a new series."}, status=status.HTTP_200_OK)
         
         elif edit_type == 'single':
-            # Edit a single event, converting it into an exception if it's part of a series.
+            # Check if this single event is being converted into a series
+            frequency = data.get('frequency', 'never')
+            frequency_total = data.get('frequency_total')
+
+            if not series and frequency != 'never' and frequency_total and int(frequency_total) > 0:
+                # Create a new series
+                new_series = ScheduleSeries.objects.create(
+                    title=data.get('title', schedule.title),
+                    frequency=frequency,
+                    frequency_total=int(frequency_total),
+                    notes=data.get('notes', schedule.notes),
+                    start_datetime=_parse_dt(data.get('datetime')) or schedule.datetime
+                )
+
+                # Attach the event to the new series
+                schedule.series = new_series
+                schedule.is_exception = False
+                schedule.save()
+
+                # Update with any new fields
+                serializer = self.get_serializer(schedule, data=data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            # Existing logic for editing a single event in a series
             is_base_event = False
             new_datetime_str = data.get('datetime')
             datetime_changed = new_datetime_str and new_datetime_str != schedule.datetime.isoformat()
-
             if datetime_changed:
                 if series:
                     # Create a placeholder at the old datetime to mark it as deleted.
