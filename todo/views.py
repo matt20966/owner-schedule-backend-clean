@@ -470,7 +470,8 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                             duration=timedelta(0),
                             title=f"DELETED_{uuid.uuid4()}"
                         )
-
+                    schedule.series = None
+                    schedule.frequency = 'never'
                     new_datetime = datetime.fromisoformat(new_datetime_str)
                     is_base_event = series and series.start_datetime == schedule.datetime
 
