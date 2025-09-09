@@ -89,6 +89,54 @@ def _count_occurrences_before(series, target_dt):
         current = _advance(series, current)
     return count
 
+def _check_if_event_exists(self, data):
+    """
+    Checks if a single event or a recurring event series with the same
+    properties already exists in the database.
+
+    Args:
+        data (dict): The event data from the request.
+
+    Returns:
+        tuple: A tuple containing (bool, str). The bool is True if an event exists,
+               False otherwise. The str is an error message or None.
+    """
+    title = data.get('title')
+    dt = _parse_dt(data.get('datetime'))
+    frequency = data.get('frequency', 'never')
+    frequency_total = data.get('frequency_total')
+
+    if not title or not dt:
+        return False, None
+
+    # Check for a single, non-recurring event
+    if frequency == 'never':
+        existing_event = Schedule.objects.filter(
+            series__isnull=True,
+            title=title,
+            datetime=dt,
+        ).first()
+        if existing_event:
+            return True, "A single event with this title and datetime already exists."
+    
+    # Check for an existing recurring event series
+    else:
+        try:
+            frequency_total = int(frequency_total)
+        except (ValueError, TypeError):
+            return False, None
+
+        existing_series = ScheduleSeries.objects.filter(
+            title=title,
+            start_datetime=dt,
+            frequency=frequency,
+            frequency_total=frequency_total
+        ).first()
+        if existing_series:
+            return True, "A recurring event series with these properties already exists."
+    
+    return False, None
+
 class ScheduleViewSet(viewsets.ModelViewSet):
     """A ViewSet for handling Schedule and ScheduleSeries operations.
 
@@ -234,16 +282,67 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(all_events, many=True)
         return Response(serializer.data)
 
+    def _check_if_event_exists(self, data):
+        """
+        Checks if a single event or a recurring event series with the same
+        properties already exists in the database.
+
+        Args:
+            data (dict): The event data from the request.
+
+        Returns:
+            tuple: A tuple containing (bool, str). The bool is True if an event exists,
+                False otherwise. The str is an error message or None.
+        """
+        title = data.get('title')
+        dt = _parse_dt(data.get('datetime'))
+        frequency = data.get('frequency', 'never')
+        frequency_total = data.get('frequency_total')
+
+        if not title or not dt:
+            return False, None
+
+        # Check for a single, non-recurring event
+        if frequency == 'never':
+            existing_event = Schedule.objects.filter(
+                series__isnull=True,
+                title=title,
+                datetime=dt,
+            ).first()
+            if existing_event:
+                return True, "A single event with this title and datetime already exists."
+    
+        # Check for an existing recurring event series
+        else:
+            try:
+                frequency_total = int(frequency_total)
+            except (ValueError, TypeError):
+                return False, None
+
+            existing_series = ScheduleSeries.objects.filter(
+                title=title,
+                start_datetime=dt,
+                frequency=frequency,
+                frequency_total=frequency_total
+            ).first()
+            if existing_series:
+                return True, "A recurring event series with these properties already exists."
+        
+        return False, None
+
     def create(self, request, *args, **kwargs):
         """Creates a new single or recurring event."""
         data = request.data
-        title = data.get('title')
         dt = _parse_dt(data.get('datetime'))
         duration = _parse_duration(data.get('duration'))
-        notes = data.get('notes')
-        link = data.get('link')
         frequency = data.get('frequency') or 'never'
         frequency_total = data.get('frequency_total')
+
+        # --- Add the existence check here ---
+        event_exists, message = self._check_if_event_exists(data)
+        if event_exists:
+            return Response({"error": message}, status=status.HTTP_409_CONFLICT)
+        # --- End of added code ---
 
         if not dt:
             return Response({"error": "Invalid or missing 'datetime'."}, status=status.HTTP_400_BAD_REQUEST)
@@ -257,24 +356,24 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             # Create a recurring event series.
             if not frequency_total or int(frequency_total) <= 0:
                 return Response({"error": "'frequency_total' must be > 0 for recurring series."},
-                                 status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
 
             with transaction.atomic():
                 # Create the series and the first event instance.
                 series = ScheduleSeries.objects.create(
-                    title=title,
+                    title=data.get('title'),
                     frequency=frequency,
                     frequency_total=int(frequency_total),
-                    notes=notes,
+                    notes=data.get('notes'),
                     start_datetime=dt
                 )
                 base_event = Schedule.objects.create(
                     series=series,
-                    title=title,
+                    title=data.get('title'),
                     datetime=dt,
                     duration=duration,
-                    notes=notes,
-                    link=link,
+                    notes=data.get('notes'),
+                    link=data.get('link'),
                     is_exception=False
                 )
             ser = self.get_serializer(base_event)
@@ -282,11 +381,11 @@ class ScheduleViewSet(viewsets.ModelViewSet):
 
         # Create a single, non-recurring event.
         event = Schedule.objects.create(
-            title=title,
+            title=data.get('title'),
             datetime=dt,
             duration=duration,
-            notes=notes,
-            link=link,
+            notes=data.get('notes'),
+            link=data.get('link'),
             is_exception=False
         )
         ser = self.get_serializer(event)
