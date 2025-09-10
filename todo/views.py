@@ -11,6 +11,24 @@ from rest_framework.response import Response
 
 from .models import Schedule, ScheduleSeries
 from .serializers import ScheduleSerializer
+from django.views.generic import View
+from django.http import HttpResponse
+from django.conf import settings
+import os
+
+class FrontendAppView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            with open(os.path.join(
+                settings.BASE_DIR, 
+                'owner_schedule_backend', 
+                'frontend', 
+                'dist', 
+                'index.html'
+            )) as f:
+                return HttpResponse(f.read())
+        except FileNotFoundError:
+            raise Http404("Frontend build not found. Run `npm run build` in the frontend folder.")
 
 def _parse_dt(dt_str):
     """Parses an ISO 8601 datetime string and returns a datetime object.
@@ -412,12 +430,14 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             if not series:
                 return Response({"error": "'all' edit is only for recurring events."},
                                 status=status.HTTP_400_BAD_REQUEST)
-
+            print("hello")
             # Update series fields.
             series.title = data.get('title', series.title)
             series.notes = data.get('notes', series.notes)
             series.frequency = data.get('frequency', series.frequency)
             series.frequency_total = data.get('frequency_total', series.frequency_total)
+            print(series.frequency)
+            print(series.frequency_total)
             new_dt = _parse_dt(data.get('datetime')) or event_dt
             offset_hours = new_dt.utcoffset().total_seconds() / 3600
             new_dt = new_dt - timedelta(hours=offset_hours)
