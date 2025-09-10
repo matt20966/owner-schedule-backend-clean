@@ -411,7 +411,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             # Edit all events in a series.
             if not series:
                 return Response({"error": "'all' edit is only for recurring events."},
-                                 status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
 
             # Update series fields.
             series.title = data.get('title', series.title)
@@ -421,12 +421,10 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             new_dt = _parse_dt(data.get('datetime')) or event_dt
             offset_hours = new_dt.utcoffset().total_seconds() / 3600
             new_dt = new_dt - timedelta(hours=offset_hours)
-            print(new_dt)
-
 
             if not new_dt:
                 return Response({"error": "Missing or invalid datetime for time update."},
-                                 status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
 
             date_only = new_dt.date()
             selected_weekday = date_only.weekday()
@@ -457,6 +455,10 @@ class ScheduleViewSet(viewsets.ModelViewSet):
 
             # Update all existing event instances in the series.
             for event in Schedule.objects.filter(series=series):
+                # Skip deleted events
+                if event.title.startswith("DELETED_"):
+                    continue
+
                 event_date = event.datetime.date()
                 if series.frequency in ['weekly', 'fortnightly']:
                     current_weekday = event_date.weekday()
@@ -474,52 +476,58 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                 event.save()
 
             return Response({"status": "All events in the series updated."},
-                             status=status.HTTP_200_OK)
+                            status=status.HTTP_200_OK)
+
 
         elif edit_type == 'future':
-            # Edit all future events by creating a new series.
-            if not series:
-                return Response({"error": "'future' edit is only for recurring events."}, status=status.HTTP_400_BAD_REQUEST)
+                # Edit all future events by creating a new series.
+                if not series:
+                    return Response({"error": "'future' edit is only for recurring events."}, status=status.HTTP_400_BAD_REQUEST)
 
-            original_series_total = series.frequency_total
-            # Shorten the original series to end before the edited event.
-            old_count = _count_occurrences_before(series, event_dt)
-            series.frequency_total = old_count
-            series.save()
+                original_series_total = series.frequency_total
+                # Shorten the original series to end before the edited event.
+                old_count = _count_occurrences_before(series, event_dt)
+                series.frequency_total = old_count
+                series.save()
 
-            new_title = data.get('title', series.title)
-            new_notes = data.get('notes', series.notes)
-            new_duration = data.get('duration', schedule.duration)
-            new_link = data.get('link', schedule.link)
+                new_title = data.get('title', series.title)
+                new_notes = data.get('notes', series.notes)
+                new_duration = data.get('duration', schedule.duration)
+                new_link = data.get('link', schedule.link)
 
-            new_dt = _parse_dt(data.get('datetime')) or event_dt
+                new_dt = _parse_dt(data.get('datetime')) or event_dt
 
-            # Calculate the number of events for the new series.
-            new_total_occurrences = original_series_total - old_count
-            if new_total_occurrences <= 0:
-                return Response({"status": "No future events to modify."}, status=status.HTTP_200_OK)
+                # Calculate the number of events for the new series.
+                new_total_occurrences = original_series_total - old_count
+                if new_total_occurrences <= 0:
+                    return Response({"status": "No future events to modify."}, status=status.HTTP_200_OK)
 
-            # Create the new series with the new start date and other updated data.
-            new_series = ScheduleSeries.objects.create(
-                title=new_title,
-                notes=new_notes,
-                frequency=series.frequency,
-                frequency_total=new_total_occurrences,
-                start_datetime=new_dt
-            )
+                # Skip if the new event would be a deleted event
+                if new_title.startswith("DELETED_"):
+                    return Response({"status": "Cannot create future series for deleted events."}, status=status.HTTP_200_OK)
 
-            # Create the first event instance for the new series.
-            Schedule.objects.create(
-                series=new_series,
-                datetime=new_dt,
-                is_exception=False,
-                title=new_title,
-                notes=new_notes,
-                duration=new_duration,
-                link=new_link
-            )
+                # Create the new series with the new start date and other updated data.
+                new_series = ScheduleSeries.objects.create(
+                    title=new_title,
+                    notes=new_notes,
+                    frequency=series.frequency,
+                    frequency_total=new_total_occurrences,
+                    start_datetime=new_dt
+                )
 
-            return Response({"status": "Future events updated by creating a new series."}, status=status.HTTP_200_OK)
+                # Create the first event instance for the new series.
+                Schedule.objects.create(
+                    series=new_series,
+                    datetime=new_dt,
+                    is_exception=False,
+                    title=new_title,
+                    notes=new_notes,
+                    duration=new_duration,
+                    link=new_link
+                )
+
+                return Response({"status": "Future events updated by creating a new series."}, status=status.HTTP_200_OK)
+
         
         elif edit_type == 'single':
             # Check if this single event is being converted into a series
@@ -551,7 +559,9 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             # Existing logic for editing a single event in a series
             is_base_event = False
             new_datetime_str = data.get('datetime')
-            datetime_changed = new_datetime_str and new_datetime_str != schedule.datetime.isoformat()
+            if new_datetime_str:
+                new_datetime = parser.isoparse(new_datetime_str)
+                datetime_changed = new_datetime != schedule.datetime
             if datetime_changed:
                 if series:
                     # Create a placeholder at the old datetime to mark it as deleted.
@@ -638,7 +648,27 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             else:
                 # If the datetime didn't change but other fields did, and it's a recurring event, mark it as an exception.
                 if series:
+                    print("hey")
+
+                    deleted_event = Schedule.objects.filter(
+                        series=series,
+                        datetime=schedule.datetime,
+                        title__startswith="DELETED_"
+                    ).first()
+
+                    if not deleted_event:
+                        Schedule.objects.create(
+                            series=series,
+                            datetime=schedule.datetime,
+                            is_exception=True,
+                            duration=timedelta(0),
+                            title=f"DELETED_{uuid.uuid4()}"
+                        )
+                        schedule.series = None
+                    schedule.frequency = 'never'
                     schedule.is_exception = True
+                
+                    
                 
             # Update the event with the new data.
             serializer = self.get_serializer(schedule, data=data, partial=True)
