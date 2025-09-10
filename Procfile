@@ -1,1 +1,1 @@
-web: gunicorn owner-schedule-frontned.wsgi
+web: gunicorn owner-schedule-frontend.wsgi
