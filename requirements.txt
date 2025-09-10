@@ -1,0 +1,14 @@
+# Core Django
+Django>=5.2.5
+
+# Environment variables
+python-dotenv>=1.1.0
+
+# Django REST Framework
+djangorestframework>=3.15.0
+
+# CORS headers for API
+django-cors-headers>=4.0.0
+
+# PostgreSQL adapter
+psycopg2-binary>=2.9.9
