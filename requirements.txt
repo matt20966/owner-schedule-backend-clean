@@ -12,6 +12,7 @@ cffi==1.17.1
 charset-normalizer==3.4.0
 click==8.1.7
 django-cors-headers
+psycopg2-binary==2.9.9
 
 colorama==0.4.6
 Django==5.2.5
@@ -86,4 +87,5 @@ Werkzeug==3.0.4
 wrapt==1.14.1
 wsproto==1.2.0
 yarl==1.17.1
+
 
