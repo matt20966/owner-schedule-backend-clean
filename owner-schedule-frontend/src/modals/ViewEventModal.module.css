@@ -1,0 +1,302 @@
+/*
+ * ViewEventModal.module.css
+ *
+ * This file defines the styles for the ViewEventModal component, including
+ * animations, layout, and visual presentation.
+ */
+
+/* --- Keyframes --- */
+
+/**
+ * @keyframes fadeInScaleUp
+ *
+ * Defines a subtle, animated entrance for the modal. It fades in
+ * while slightly scaling up and translating vertically, creating
+ * a smooth and elegant effect.
+ */
+@keyframes fadeInScaleUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --- Layout and Structure --- */
+
+/**
+ * .overlay
+ *
+ * Styles for the full-screen overlay that appears behind the modal.
+ * It uses a semi-transparent background and a backdrop filter for a
+ * frosted glass effect, centering the modal within the viewport.
+ */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/**
+ * .modal
+ *
+ * Main container for the modal's content. It sets the modal's
+ * dimensions, styling (font, background, shadow), and applies
+ * the entrance animation.
+ */
+.modal {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  animation: fadeInScaleUp 0.3s ease-out forwards;
+}
+
+/**
+ * .header
+ *
+ * Container for the modal's title and close button, providing
+ * horizontal spacing and alignment.
+ */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/**
+ * .title
+ *
+ * Styles for the main heading of the modal, setting its font size,
+ * weight, and color.
+ */
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/**
+ * .form-content
+ *
+ * Main content area for the form fields. It creates a vertical
+ * stack with a gap and enables scrolling for long content.
+ */
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 60vh;
+  padding-right: 8px; /* Adds space for the scrollbar */
+}
+
+/**
+ * .actions
+ *
+ * Container for the action buttons at the bottom of the modal.
+ * It provides spacing, a top border, and right alignment.
+ */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 24px;
+  gap: 12px;
+}
+
+/* --- Elements --- */
+
+/**
+ * .close-button
+ *
+ * Styles for the button to close the modal. It's a circular,
+ * transparent button with a subtle hover effect.
+ */
+.close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #94a3b8;
+  border-radius: 50%;
+  display: flex;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.close-button:hover,
+.close-button:focus {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/**
+ * .field
+ *
+ * Basic text styles for a form field label or value.
+ */
+.field {
+  font-size: 16px;
+  color: #1e293b;
+}
+
+/**
+ * .field-link
+ *
+ * A specific layout for fields that contain a link, aligning
+ * the text and an icon horizontally.
+ */
+.field-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Buttons --- */
+
+/**
+ * .button
+ *
+ * Base styles for all buttons, setting a consistent look for padding,
+ * border-radius, font, and transitions.
+ */
+.button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  font-family: inherit;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/**
+ * .edit-button
+ *
+ * Specific styles for the primary action button (e.g., "Edit").
+ * Defines its color scheme and hover/active states.
+ */
+.edit-button {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.edit-button:hover {
+  background-color: #2563eb;
+}
+
+.edit-button:active {
+  transform: scale(0.98);
+}
+
+/**
+ * .copy-button
+ *
+ * Styles for the secondary "Copy" button. It's styled differently
+ * from the main action buttons and is aligned to the left.
+ */
+.copy-button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: #f1f5f9;
+  color: #334155;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-left: auto; /* Aligns the button to the right */
+}
+
+.copy-button:hover {
+  background-color: #e2e8f0;
+}
+
+.copy-button:active {
+  transform: scale(0.98);
+}
+
+/* New Dropdown Button container for Delete Button*/
+.dropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.deleteButton {
+  background-color: #ef4444;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  font-family: inherit;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.deleteButton:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+}
+
+.deleteButton:active {
+  background-color: #b91c1c;
+  transform: translateY(0);
+}
+
+/* The Dropdown Menu for Delete */
+.dropdownContent {
+  position: absolute;
+  bottom: calc(100% + 12px); /* Positions the dropdown above the button */
+  right: 0;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  z-index: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  gap: 4px;
+}
+
+/* Individual dropdown menu items for delete options */
+.dropdownItem {
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  color: #000;
+}
+
+.dropdownItem:hover {
+  background-color: #f1f5f9;
+}

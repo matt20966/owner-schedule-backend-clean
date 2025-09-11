@@ -1,0 +1,410 @@
+/*
+* SettingsModal.module.css
+*
+* This stylesheet defines the styles for a modern, responsive settings modal.
+* It includes animations, layout definitions for form elements, and custom
+* styles for checkboxes and radio buttons to ensure a consistent look.
+*/
+
+/* --- Keyframe Animations --- */
+
+/*
+* @keyframes fadeIn
+* Animates the overlay to fade in from transparent to opaque, providing a smooth
+* transition for the modal's background.
+*/
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+* @keyframes scaleIn
+* Animates the modal itself to scale up from a slightly smaller size, creating
+* a 'pop-in' effect that feels more dynamic and engaging.
+*/
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* --- Modal Structure and Layout --- */
+
+/*
+* .overlay
+* Styles the full-screen backdrop for the modal. It centers the modal, applies a
+* semi-transparent dark background, and uses backdrop-filter for a subtle blur effect.
+*/
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(17, 24, 39, 0.5); /* A dark, semi-transparent background */
+  backdrop-filter: blur(6px); /* Applies a blur effect to content behind the overlay */
+  display: flex; /* Centers the modal vertically and horizontally */
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Ensures the modal is on top of other content */
+  animation: fadeIn 0.3s ease; /* Applies the fade-in animation */
+}
+
+/*
+* .modal
+* Styles the main container for the modal's content. It features a clean
+* design with a white background, rounded corners, and a subtle box shadow.
+*/
+.modal {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 24px;
+  max-width: 550px;
+  width: 90%; /* Ensures responsiveness on smaller screens */
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); /* Soft, elevated shadow */
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  animation: scaleIn 0.3s ease forwards; /* Applies the scale-in animation */
+}
+
+/* --- Header Section --- */
+
+/*
+* .header
+* Defines the layout for the modal's header, containing the title and close button.
+*/
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e7ff;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+/*
+* .title
+* Styles the main title of the modal.
+*/
+.title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e40af; /* A bold, primary blue color */
+}
+
+/*
+* .close-button
+* Styles the interactive close button. It's a transparent button with a hover
+* effect that changes background, color, and size.
+*/
+.close-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: #94a3b8;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+/* Hover state for the close button */
+.close-button:hover {
+  background-color: #f1f5f9;
+  color: #64748b;
+  transform: scale(1.1); /* Adds a subtle zoom effect */
+}
+
+/* --- Form Content and Fields --- */
+
+/*
+* .form-content
+* A flex container for the main form elements, managing their vertical spacing.
+*/
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/*
+* .field
+* Container for each form field, typically a label and an input.
+*/
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/*
+* .label
+* Styles the text label for form inputs.
+*/
+.label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #475569;
+}
+
+/*
+* .input
+* Styles for standard text inputs. Includes hover/focus effects for better user
+* feedback and accessibility.
+*/
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  font-size: 16px;
+  color: #0f172a;
+  background-color: #f9fafb;
+  outline: none; /* Removes the default outline */
+  font-family: inherit; /* Ensures consistent font */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Focus state for the input field */
+.input:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* A soft focus ring */
+}
+
+/* --- Custom Checkbox Styles --- */
+
+/*
+* .checkbox-container
+* Wrapper for the custom checkbox and its label, ensuring they are aligned.
+*/
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  cursor: pointer;
+  outline: none;
+}
+
+/*
+* .hidden-checkbox
+* Hides the native checkbox input while keeping it accessible to screen readers.
+*/
+.hidden-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  outline: none;
+}
+
+/*
+* .custom-checkbox
+* Styles the visual representation of the checkbox.
+*/
+.custom-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #cbd5e1;
+  background-color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0; /* Prevents shrinking in flex layout */
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* State when the hidden input is checked */
+.hidden-checkbox:checked + .custom-checkbox {
+  background-color: #94a3b8;
+  border-color: #94a3b8;
+}
+
+/*
+* .checkmark
+* Styles the small, circular checkmark inside the custom checkbox.
+*/
+.checkmark {
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-radius: 50%;
+  transform: scale(0); /* Initially hidden */
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Scales up the checkmark when the checkbox is checked */
+.hidden-checkbox:checked + .custom-checkbox .checkmark {
+  transform: scale(1);
+}
+
+/* --- Action Buttons --- */
+
+/*
+* .actions
+* Container for the action buttons at the bottom of the modal.
+*/
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  border-top: 1px solid #e0e7ff;
+  padding-top: 24px;
+}
+
+/*
+* .button
+* Base styles for all buttons in the modal. Includes a subtle hover effect.
+*/
+.button {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+/* Hover state for all buttons */
+.button:hover {
+  transform: translateY(-2px); /* Lifts the button slightly on hover */
+}
+
+/*
+* .cancel-button
+* Specific styles for the cancel/secondary button.
+*/
+.cancel-button {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+/* Hover state for the cancel button */
+.cancel-button:hover {
+  background-color: #e2e8f0;
+}
+
+/*
+* .save-button
+* Specific styles for the save/primary button, featuring a gradient background
+* and a more pronounced box shadow on hover.
+*/
+.save-button {
+  background: linear-gradient(135deg, #6366f1, #3b82f6);
+  color: #e2e8f0;
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+}
+
+/* Hover state for the save button */
+.save-button:hover {
+  box-shadow: 0 6px 10px rgba(99, 102, 241, 0.3);
+}
+
+/* --- Custom Radio Button Styles --- */
+
+/*
+* .radio-group
+* Container for a group of radio buttons, managing horizontal spacing.
+*/
+.radio-group {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+/*
+* .radio-container
+* Wrapper for each radio button, ensuring the hidden input and label are aligned.
+*/
+.radio-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none; /* Prevents text selection on double-click */
+    font-weight: 500;
+}
+
+/*
+* .hidden-radio
+* Hides the native radio button input while maintaining its functionality and
+* accessibility.
+*/
+.hidden-radio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/*
+* .radio-label
+* Styles the visible text label for the radio button. The custom button is
+* created using ::before and ::after pseudo-elements.
+*/
+.radio-label {
+    padding-left: 28px; /* Creates space for the custom radio button */
+    position: relative;
+    color: var(--color-text-light); /* Uses a CSS variable for text color */
+}
+
+/* ::before pseudo-element creates the outer ring of the radio button */
+.radio-label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-border); /* Uses a CSS variable for border color */
+    background-color: var(--color-background); /* Uses a CSS variable for background color */
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+/* ::after pseudo-element creates the inner circle of the radio button */
+.radio-label::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%) scale(0); /* Initially hidden */
+    width: 10px;
+    height: 10px;
+    background-color: var(--color-primary); /* Uses a CSS variable for the inner circle color */
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+/* State when the hidden radio button is checked */
+.hidden-radio:checked + .radio-label::before {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+}
+
+/* Scales up the inner circle when the radio button is checked */
+.hidden-radio:checked + .radio-label::after {
+    transform: translateY(-50%) scale(1);
+}
+
+/* Accessibility: Adds a focus ring when the radio button is tab-focused */
+.hidden-radio:focus-visible + .radio-label::before {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+}
+

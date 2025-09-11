@@ -1,0 +1,545 @@
+/*
+ * Refactored Styles for a Calendar Application
+ *
+ * This file centralizes color variables, groups related styles for readability,
+ * and removes redundant or ineffective declarations to improve maintainability.
+ */
+
+/* ==================================== */
+/* 1. Global & Utility Styles           */
+/* ==================================== */
+
+/* Import Inter font and define custom properties for colors */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Primary Colors */
+  --color-primary: #3b82f6;
+  --color-primary-light: #dbeafe;
+  --color-primary-dark: #1e40af;
+  --color-accent: #6366f1;
+
+  /* Neutral & Background Colors */
+  --color-background: #f4f7fc;
+  --color-surface: #ffffff;
+  --color-border: #e0e7ff;
+  --color-text: #0f172a;
+  --color-text-light: #475569;
+
+  /* Status Colors */
+  --color-success: #4CAF50;
+  --color-error: #f44336;
+  --color-info: #2196F3;
+}
+
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-background);
+  margin: 0;
+  padding: 32px;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* Hide elements visually but keep them accessible for screen readers */
+.hidden {
+  display: none;
+  visibility: hidden;
+  position: absolute;
+  left: -9999px;
+  width: 0;
+  height: 0;
+}
+
+/* ==================================== */
+/* 2. Banner & Pop-up Styles            */
+/* ==================================== */
+
+.banner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  animation: fadeInOut 5s forwards;
+  transition: all 0.3s ease;
+}
+
+.banner.success { background-color: var(--color-success); }
+.banner.error { background-color: var(--color-error); }
+.banner.info { background-color: var(--color-info); }
+
+.banner-close-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-close-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, -20px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  90% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+/* ==================================== */
+/* 3. Calendar Layout                   */
+/* ==================================== */
+
+.calendar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05), 0 6px 6px rgba(0, 0, 0, 0.03);
+  padding: 32px;
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  height: calc(100vh - 200px);
+}
+
+/* Hide scrollbar for Chrome, Safari, and Opera */
+.calendar-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.calendar-container {
+  scrollbar-width: none;
+}
+
+/* Navigation bar styling */
+.nav-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ❌ REMOVED: .nav-buttons is no longer in the HTML structure */
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+/* ✅ NEW: Styles for the new container holding prev/next and date selector */
+.nav-center-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-button {
+  background-color: #eff6ff;
+  color: var(--color-primary);
+  font-weight: 600;
+  border: 1px solid var(--color-primary-light);
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-button:hover {
+  background-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.date-selector-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 8px 16px;
+  border-radius: 12px;
+}
+
+.date-icon-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--color-accent);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.date-icon-button:hover {
+  color: #4f46e5;
+  transform: scale(1.1);
+}
+
+.current-date {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.settings-button, .add-event-button {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  color: #ffffff;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+}
+
+.settings-button:hover, .add-event-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* ==================================== */
+/* 4. FullCalendar & Datepicker Overrides */
+/* ==================================== */
+
+/* This ensures the date picker pop-up renders on top of everything else */
+.datepicker-container,
+.react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.fc {
+  font-family: 'Inter', sans-serif;
+}
+
+.fc .fc-toolbar {
+  display: none;
+}
+
+.fc .fc-daygrid-day,
+.fc .fc-timegrid-col {
+  background-color: var(--color-surface);
+  border-color: #eff6ff;
+}
+
+.fc .fc-daygrid-day-top,
+.fc .fc-timegrid-slot-label {
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.fc .fc-col-header-cell {
+  background-color: #f9fafb;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  border-bottom: 2px solid var(--color-primary-light);
+}
+
+.fc .fc-day-other .fc-daygrid-day-top {
+  opacity: 0.5;
+}
+
+.fc .fc-event {
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+}
+
+.fc .fc-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.fc .fc-event-main {
+  color: #ffffff;
+}
+
+.fc .fc-now-indicator {
+  border-color: var(--color-error);
+  border-width: 2px;
+}
+
+/* This targets events in the time grid view, forcing them to stack correctly */
+.fc-timegrid-event {
+  width: 100% !important;
+  left: 0 !important;
+  opacity: 0.8;
+}
+
+/* ==================================== */
+/* 5. Modal Styles                      */
+/* ==================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  to { transform: scale(1); }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background-color: var(--color-surface);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 550px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95);
+  animation: scaleIn 0.3s ease forwards;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin: 0;
+}
+
+.close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: #94a3b8;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #f1f5f9;
+  color: #475569;
+  transform: rotate(90deg);
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  max-height: 65vh;
+  padding-right: 12px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  margin-bottom: 10px;
+}
+
+.form-input {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-primary-light);
+  font-size: 16px;
+  color: var(--color-text);
+  background-color: #f9fafb;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.fc-scroller {
+  overflow-y: auto; /* allow scrolling */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+/* Chrome, Safari, and Opera */
+.fc-scroller::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* optional: just in case */
+}
+
+
+.nav-button:focus,
+.settings-button:focus,
+.add-event-button:focus,
+.date-icon-button:focus {
+  outline: none;
+  box-shadow: none; /* optional */
+}
+
+
+.form-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+button:active,
+a:active {
+  outline: none;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 24px;
+}
+
+.modal-button {
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 16px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.add-button {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  color: white;
+  box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
+}
+
+.cancel-button {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.delete-button {
+  background: linear-gradient(135deg, var(--color-error), #dc2626);
+  color: white;
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+}
+
+.forever-button {
+  background-color: #6b7280;
+  color: #ffffff;
+  padding: 12px 16px;
+  width: 110px;
+}
+
+.active-button {
+  background-color: #4b5563;
+}
+
+.calendar-icon, .settings-icon, .add-event-icon {
+  width: 28px;
+  height: 28px;
+  transition: stroke 0.2s ease;
+}
+
+
+
+/* ==================================== */
+/* 6. Responsive Adjustments            */
+/* ==================================== */
+
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  
+  .nav-wrapper {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .nav-center-group, .action-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fc .fc-event {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+}
+
+/* Highlight the entire week of the selected day */
+.custom-date-picker .week-selected {
+    background-color: #e6e6fa !important; /* Light purple fill */
+    border-radius: 0 !important;
+    color: #333 !important;
+}
+
+/* Optional: highlight today differently */
+.custom-date-picker .react-datepicker__day--today {
+    background-color: #6a6ad9 !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    border-radius: 50% !important;
+}
+
+
