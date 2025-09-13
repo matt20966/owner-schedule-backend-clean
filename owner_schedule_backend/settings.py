@@ -10,7 +10,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-
+import dj_database_url
 # Load environment variables from .env
 load_dotenv()
 
@@ -74,16 +74,26 @@ TEMPLATES = [
 WSGI_APPLICATION = "owner_schedule_backend.wsgi.application"
 
 # Database
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME", "ownerschedule"),
-        "USER": os.getenv("DB_USER", "ownerscheduleuser"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "strongpassword"),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+if os.getenv("DATABASE_URL"):
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=os.environ["DATABASE_URL"],
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "ownerschedule"),
+            "USER": os.getenv("DB_USER", "ownerscheduleuser"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "strongpassword"),
+            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+        }
+    }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
