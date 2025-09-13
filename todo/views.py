@@ -241,15 +241,18 @@ class ScheduleViewSet(viewsets.ModelViewSet):
         }
 
         # Index exceptions and deleted events for quick lookup.
+        # Index exceptions and deleted events for quick lookup.
         exceptions_by_key = {}
         deleted_keys = set()
+        oldseries_days = set()  # <-- track OLDSERIES occurrences
         for ex in stored_events:
             if ex.series_id:
                 key = (ex.series_id, ex.datetime)
                 exceptions_by_key[key] = ex
                 if ex.is_exception and (ex.title or "").startswith("DELETED_"):
                     deleted_keys.add(key)
-
+                if "OLDSERIES" in (ex.title or ""):
+                    oldseries_days.add((ex.series_id, ex.datetime.date()))
         # Generate recurring events dynamically.
         dynamic_events = []
         for s in series_qs:
@@ -265,8 +268,8 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             while current <= end_date and count < s.frequency_total:
                 if current >= start_date:
                     key = (s.id, current)
-                    if key in deleted_keys:
-                        # Skip if this occurrence is explicitly deleted.
+                    if key in deleted_keys or (s.id, current.date()) in oldseries_days:
+                        # Skip if this occurrence is explicitly deleted or marked OLDSERIES
                         pass
                     elif key in exceptions_by_key:
                         # Skip if there's an exception, as it's already in stored_events.
@@ -286,11 +289,12 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                         ))
                 current = _advance(s, current)
                 count += 1
+
         
         # Combine all events, filter out deleted ones, and sort by datetime.
         all_events = []
         for e in stored_events:
-            if e.is_exception and (e.title or "").startswith("DELETED_"):
+            if e.is_exception and ((e.title or "").startswith("DELETED_") or "OLDSERIES" in (e.title or "")):
                 continue
             all_events.append(e)
         all_events.extend(dynamic_events)
@@ -430,14 +434,11 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             if not series:
                 return Response({"error": "'all' edit is only for recurring events."},
                                 status=status.HTTP_400_BAD_REQUEST)
-            print("hello")
             # Update series fields.
             series.title = data.get('title', series.title)
             series.notes = data.get('notes', series.notes)
             series.frequency = data.get('frequency', series.frequency)
             series.frequency_total = data.get('frequency_total', series.frequency_total)
-            print(series.frequency)
-            print(series.frequency_total)
             new_dt = _parse_dt(data.get('datetime')) or event_dt
             offset_hours = new_dt.utcoffset().total_seconds() / 3600
             new_dt = new_dt - timedelta(hours=offset_hours)
@@ -476,8 +477,13 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             # Update all existing event instances in the series.
             for event in Schedule.objects.filter(series=series):
                 # Skip deleted events
-                if event.title.startswith("DELETED_"):
-                    continue
+                if event.title.startswith("DELETED_") or "OLDSERIES" in event.title:
+                     continue
+
+
+                # Skip exceptions
+                if event.is_exception:
+                        continue
 
                 event_date = event.datetime.date()
                 if series.frequency in ['weekly', 'fortnightly']:
@@ -591,6 +597,17 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                         title__startswith="DELETED_"
                     ).first()
 
+                    # --- Step 1: Create a copy with the old series ---
+                    old_series_event = Schedule.objects.create(
+                        series=series,
+                        datetime=schedule.datetime,
+                        title=(schedule.title or "") + " OLDSERIES",
+                        notes=schedule.notes,
+                        duration=schedule.duration,
+                        link=schedule.link,
+                        is_exception=True  # mark it as exception so it doesn't generate dynamically
+                    )
+
                     if not deleted_event:
                         Schedule.objects.create(
                             series=series,
@@ -668,8 +685,6 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             else:
                 # If the datetime didn't change but other fields did, and it's a recurring event, mark it as an exception.
                 if series:
-                    print("hey")
-
                     deleted_event = Schedule.objects.filter(
                         series=series,
                         datetime=schedule.datetime,
@@ -717,6 +732,7 @@ class ScheduleViewSet(viewsets.ModelViewSet):
                 return Response({"error": "'all' delete is only for recurring events."}, status=status.HTTP_400_BAD_REQUEST)
             # Delete only non-exception occurrences, keeping the series and its exceptions.
             Schedule.objects.filter(series=series, is_exception=False).delete()
+            series.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         elif delete_type == 'future':
@@ -733,23 +749,30 @@ class ScheduleViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
             
         else:
-            # Single occurrence delete.
-            if not series:
-                # For a standalone event, just delete it.
-                schedule.delete()
-            else:
-                # For a recurring event, mark the specific occurrence as a "deleted" exception.
-                event = Schedule.objects.filter(
-                    series=series,
-                    datetime=event_dt
-                ).exclude(title__startswith="DELETED_").first()
+            print("delete gets to here")
+            # For a recurring event, mark the specific occurrence as a "deleted" exception.
+            event = Schedule.objects.filter(
+                series=series,
+                datetime=event_dt
+            ).exclude(title__startswith="DELETED_").first()
 
-                if event:
-                    event.is_exception = True
-                    event.title = f"DELETED_{uuid.uuid4()}"
-                    event.duration = timedelta(0)
-                    event.notes = 'Deleted occurrence'
-                    event.link = ''
-                    event.save()
+            if event:
+                event.is_exception = True
+                event.title = f"DELETED_{uuid.uuid4()}"
+                event.duration = timedelta(0)
+                event.notes = 'Deleted occurrence'
+                event.link = ''
+                event.save()
+            else:
+                # If no event exists yet, create a DELETED placeholder
+                Schedule.objects.create(
+                    series=series,
+                    datetime=event_dt,
+                    is_exception=True,
+                    duration=timedelta(0),
+                    title=f"DELETED_{uuid.uuid4()}",
+                    notes='Deleted occurrence',
+                    link=''
+                )
 
             return Response(status=status.HTTP_204_NO_CONTENT)
