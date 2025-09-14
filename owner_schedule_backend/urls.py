@@ -1,18 +1,15 @@
-# owner_schedule_backend/urls.py
 import os
 from django.contrib import admin
-from django.urls import path, re_path, include
-from django.views.static import serve
-from django.conf import settings
-from todo.views import FrontendAppView
-from django.conf.urls.static import static
+from django.urls import path, include
+# Remove these imports (no longer needed):
+# from django.views.static import serve
+# from todo.views import FrontendAppView
+# from django.conf.urls.static import static  # Optional, but remove if no Django statics needed
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('todo.urls')),  # <-- all API endpoints under /api/
-    # Serve static assets
-    re_path(r'^assets/(?P<path>.*)$', serve, {'document_root': os.path.join(settings.BASE_DIR, 'owner_schedule_backend', 'frontend', 'dist', 'assets')}),
-    # Catch-all for frontend routes
-    re_path(r'^.*$', FrontendAppView.as_view(), name='frontend'),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
+    path('api/', include('todo.urls')),  # All API endpoints under /api/
+    # Optional: Add a root view if you want something at / (e.g., a simple API health check)
+    # path('', lambda request: JsonResponse({'status': 'API running'}), name='root'),
+]
+# Remove the + static(...) if not serving Django statics
