@@ -74,25 +74,17 @@ TEMPLATES = [
 WSGI_APPLICATION = "owner_schedule_backend.wsgi.application"
 
 # Database
-if os.getenv("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=os.environ["DATABASE_URL"],
-            conn_max_age=600,
-            ssl_require=True
-        )
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'gbaGCPmDNiHcVkTNtEDPqNjcFfvzDiBC',
+        'HOST': 'shortline.proxy.rlwy.net',
+        'PORT': '23604',
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.getenv("DB_NAME", "ownerschedule"),
-            "USER": os.getenv("DB_USER", "ownerscheduleuser"),
-            "PASSWORD": os.getenv("DB_PASSWORD", "strongpassword"),
-            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-            "PORT": os.getenv("DB_PORT", "5432"),
-        }
-    }
+}
+
 
 
 # Password validation
