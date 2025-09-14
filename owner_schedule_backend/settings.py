@@ -73,17 +73,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "owner_schedule_backend.wsgi.application"
 
-# Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'gbaGCPmDNiHcVkTNtEDPqNjcFfvzDiBC',
-        'HOST': 'shortline.proxy.rlwy.net',
-        'PORT': '23604',
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL')
+        )
     }
-}
 
 
 
